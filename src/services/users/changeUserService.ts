@@ -3,7 +3,6 @@ import format from "pg-format";
 import { client } from "../../database";
 import { AppError } from "../../errors";
 import { UserWithOutPassword } from "../../interfaces/users.interfaces";
-
 import { returnUserSchemaWithOutPassword } from "../../schemas/users.schemas";
 
 const changeUserService = async (
@@ -11,23 +10,24 @@ const changeUserService = async (
   userData: string
 ): Promise<UserWithOutPassword> => {
   const queryStringUserExist: string = `
-        SELECT
-            *
-        FROM
-            users
-        WHERE
-            id = $1
-    `;
+  SELECT
+      *
+  FROM
+      users
+  WHERE
+      id = $1
+`;
 
   const queryConfigExists: QueryConfig = {
     text: queryStringUserExist,
     values: [userId],
   };
-  const queryResult: QueryResult = await client.query(queryConfigExists);
+  const queryResultExist: QueryResult = await client.query(queryConfigExists);
 
-  if (queryResult.rowCount === 0) {
+  if (queryResultExist.rowCount === 0) {
     throw new AppError("User not found", 404);
   }
+
   const updateKeys = Object.keys(userData);
   const updateValues = Object.values(userData);
   const formatString: string = format(
