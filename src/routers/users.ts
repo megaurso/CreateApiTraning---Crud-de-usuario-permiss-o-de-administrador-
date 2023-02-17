@@ -1,8 +1,18 @@
 import { Router } from "express";
-import { createUserController } from "../controllers/users.controllers";
+import { createUserController, listAllUsers, listUserOnlineInfo, softDelete, updateInfoUser } from "../controllers/users.controllers";
+import { createUserSchema, updateSchema } from "../schemas/users.schemas";
+import ensureDataIsValid from "../middlewares/ensureDataValid.middleware"
+import ensureTokenIsValid from "../middlewares/ensudeTokenIsValid.middlewares"
+import ensureIsAdmin from "../middlewares/ensureUserIsAdmin.middlewares"
+import emailALreadyExist from "../middlewares/ensureEmailAlreadyExist.middleweres"
+import verifyAdminOrOwner from "../middlewares/ensureUserAdminOrNoCanChange.middlewares"
 
 const userRoutes: Router = Router()
 
-userRoutes.post("", createUserController)
+userRoutes.post("",ensureDataIsValid(createUserSchema),emailALreadyExist, createUserController)
+userRoutes.get("",ensureTokenIsValid,ensureIsAdmin,listAllUsers)
+userRoutes.get("/profile",ensureTokenIsValid,listUserOnlineInfo)
+userRoutes.delete("/:id",ensureTokenIsValid,verifyAdminOrOwner,softDelete)
+userRoutes.patch("/:id",ensureTokenIsValid,verifyAdminOrOwner,ensureDataIsValid(updateSchema),emailALreadyExist,updateInfoUser)
 
 export default userRoutes

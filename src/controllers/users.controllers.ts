@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
-import createUsersServices from "../services/users/createUserService";
+import {
+  createUsersServices,
+  listUsersService,
+  listUserInfoService,
+} from "../services/users/createUserService";
 import { IUserRequest } from "../interfaces/users.interfaces";
-
+import deleteUser from "../services/users/deleteUserService"
+import changeUserService from "../services/users/changeUserService"
 
 const createUserController = async (
   req: Request,
@@ -12,4 +17,35 @@ const createUserController = async (
   return res.status(201).json(newUser);
 };
 
-export { createUserController };
+const listAllUsers = async (req: Request, res: Response): Promise<Response> => {
+  const users = await listUsersService();
+
+  return res.json(users);
+};
+
+const listUserOnlineInfo = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const userId: number = req.user.id;
+
+  const user = await listUserInfoService(userId);
+
+  return res.json(user);
+};
+
+const softDelete = async (req: Request, res: Response): Promise<Response> => {
+  const userId:number = +req.params.id
+  await deleteUser(userId)
+  return res.status(204).send()
+};
+
+const updateInfoUser = async (req: Request, res: Response): Promise<Response> => {
+  const userId:number = +req.params.id
+
+  const user = await changeUserService(userId,req.body)
+
+  return res.status(200).json(user)
+}
+
+export { createUserController, listAllUsers, listUserOnlineInfo,softDelete,updateInfoUser };

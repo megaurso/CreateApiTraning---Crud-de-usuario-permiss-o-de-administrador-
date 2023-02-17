@@ -1,36 +1,21 @@
-import { QueryConfig } from "pg";
+import { QueryConfig, QueryResult } from "pg";
 import format from "pg-format";
 import { client } from "../../database";
 import {
   IUserRequest,
   UserResult,
+  UserResultArray,
   UserWithOutPassword,
 } from "../../interfaces/users.interfaces";
 import { AppError } from "../../errors";
+import {
+  returnSchemaAllUserWithOutPassword,
+  returnUserSchemaWithOutPassword,
+} from "../../schemas/users.schemas";
 
 const createUsersServices = async (
   userData: IUserRequest
 ): Promise<UserWithOutPassword> => {
-  const queryStringUserExist: string = `
-        SELECT 
-            *
-        FROM 
-            users
-        where 
-            email = $1
-    `;
-
-  const queryConfigUserExist: QueryConfig = {
-    text: queryStringUserExist,
-    values: [userData.email],
-  };
-
-  const queryResultExist = await client.query(queryConfigUserExist);
-
-  if (queryResultExist.rowCount > 0) {
-    throw new AppError("E-mail already registered", 409);
-  }
-
   const queryString: string = format(
     `
         INSERT INTO
@@ -47,4 +32,40 @@ const createUsersServices = async (
   return queryResult.rows[0];
 };
 
-export default createUsersServices;
+const listUsersService = async (): Promise<UserResultArray> => {
+  const queryString = `
+    SELECT 
+      *
+    FROM
+      users;
+  `;
+  const queryResult: UserResult = await client.query(queryString);
+
+  const newQuery = returnSchemaAllUserWithOutPassword.parse(queryResult.rows);
+
+  return newQuery;
+};
+
+const listUserInfoService = async (
+  userId: number
+): Promise<UserWithOutPassword> => {
+  const queryString: string = `
+    SELECT
+      *
+    FROM
+      users
+    WHERE
+      id = $1;
+  `;
+
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [userId],
+  };
+
+  const queryResult: QueryResult = await client.query(queryConfig);
+
+  return returnUserSchemaWithOutPassword.parse(queryResult.rows[0]);
+};
+
+export { createUsersServices, listUsersService, listUserInfoService };
