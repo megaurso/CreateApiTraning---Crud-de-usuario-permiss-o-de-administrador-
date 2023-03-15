@@ -1,1 +1,8 @@
-# m4-t14-crud-adm
+# crud-adm
+# bcryptjs
+# dotenv
+# express
+# express-async-errors
+# jsonwebtoken
+# pg
+# zod
